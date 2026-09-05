@@ -68,6 +68,11 @@ codex exec --sandbox workspace-write \
   xhigh for work that is genuinely enumerative and wide (auditing every call site, a mutation sweep
   across many guards), where the risk is *missing* something rather than *reasoning past* it.
   "This task feels important" is not a reason.
+
+  (Learned 2026-09-05: pinning xhigh on every dispatch exhausted the usage limit mid-session and
+  stalled two in-flight rounds. Every genuine quality win that session came from a better packet —
+  explicit oracles, mutation requirements, forbidden regeneration of reference data — not from
+  effort.)
 - **Service tier: `fast` doubles the cost.** Use it only when you are blocked on the result. For a
   backgrounded packet where you end the turn and wait for the notification, latency is free — the
   default tier is the better trade.
@@ -178,6 +183,28 @@ packet, not the review:
   set/list/threshold into a packet, grep for an existing predicate that defines it and cite that
   instead — and when the fix lands, require the classification to READ the shared definition
   rather than copy it, or the packet has just authored the duplication it was sent to remove.
+
+- **Label every prescribed test as red/green or compatibility, and pin its expected output to the
+  code path, not to intuition**: a packet asked for three tests and one blanket "each must fail on
+  the pre-fix code"; Codex stopped twice, once because a test expectation contradicted the code
+  (the branch under test never applied the operation the expectation assumed, so the described
+  state was impossible) and once because a captured-bytes compatibility test cannot fail on both
+  versions by definition (2026-09-02). Both stops were correct. Before writing a test expectation
+  into a packet, trace that scenario through the actual branch; mark which tests demonstrate the
+  fix and which pin unchanged behavior; and add "when a packet detail is merely underspecified
+  rather than contradicting the code, choose the reading that preserves the contract, proceed, and
+  list the choice under deviations."
+
+- **Never name an existing error variant, helper, or type for a meaning it does not have**: a
+  packet told Codex to reuse an existing angle-arity error variant for a qubit-count mismatch;
+  Codex complied and the Display text lied (2026-09-04, caught only at hunk review). Same class as
+  the add-term defect: prescribe the meaning ("a qubit-count mismatch is its own error with a
+  truthful message") and let the implementer pick or add the variant.
+- **"No fallible operation on that path" must be checked for panics, not just `Result`s**: a
+  reviewer (and the packet built on it) declared a sampling path infallible because nothing
+  returned `Err`; the executor `assert!`ed and `panic!`ed on unsupported gates instead
+  (2026-09-04). When scoping error propagation, grep `assert!|panic!|expect(|unwrap()` on every
+  executor the contract covers before writing "leave it alone".
 
 ## Review loop — where the quality actually comes from
 Tier the depth to the stakes. **Low-stakes packets** (docs, lint debt, mechanical migrations with
