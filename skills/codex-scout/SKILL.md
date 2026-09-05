@@ -38,19 +38,31 @@ goes to OpenAI; only on code the user is cleared to share).
   read that yourself.
 
 ## Invocation
-From the repo root (`-C <repo-root>`), read-only sandbox, fast tier, on **Terra** (the balanced
-GPT-5.6 tier) — recon and drafting are not judgment work, so don't pay for the flagship; the "don't
-run every agent on Sol at max effort" anti-pattern is well-evidenced. Effort high for anything
-requiring real code comprehension, medium/low for pure enumeration:
+From the repo root (`-C <repo-root>`), read-only sandbox. Effort `medium` for anything requiring
+real code comprehension, `low` for pure enumeration:
 ```
 codex exec -C <repo-root> --sandbox read-only \
-  -c model='"gpt-5.6-terra"' -c service_tier='"fast"' -c model_reasoning_effort='"high"' \
+  -c model_reasoning_effort='"medium"' \
   -o <scratchpad>/scout-<topic>.md \
   "<self-contained prompt>" </dev/null > <scratchpad>/scout-<topic>.log 2>&1
 ```
-Reserve Sol/xhigh for `/codex-implement` and high-stakes review — not for reading. If a scout task
-turns out to hinge on subtly reading code, that's a signal it belongs to you (see "Not scout
-tasks"), not that Terra should be swapped for Sol.
+**Do not pin a model here.** `~/.codex/config.toml` owns that choice; hardcoding a model ID in a
+skill goes stale silently and then requests a model that may no longer exist. (This file pinned
+`gpt-5.6-terra` long after the configured default had moved on — caught 2026-09-05.) Effort and
+service tier are stable concepts and are worth pinning explicitly; model names are not.
+
+**The cheap-model lever no longer exists — effort is the lever.** Earlier guidance here said to
+route scouting to a smaller tier. As of GPT-6 Astra there is a single dense model with no mini or
+nano variant, so the only cost controls are reasoning effort and service tier. Cost per task by
+effort: low $0.63 / medium $1.16 / high $1.41 / xhigh $1.85 / max $2.57.
+
+So for scouting: **`low` for pure enumeration, `medium` for anything needing real code
+comprehension.** Do not reach past that here — if a scout task hinges on subtly reading code, that
+is a signal it belongs to you (see "Not scout tasks"), not that it needs more effort. Reserve high
+and above for `/codex-implement` and high-stakes review.
+
+**`service_tier='"fast"'` doubles the cost.** Scout runs are backgrounded and you end the turn
+anyway, so latency is free — omit it unless you are genuinely blocked on the report.
 - `run_in_background: true`, then end the turn — completion notifies you; never poll.
 - Codex has NO conversation context: the prompt must be self-contained (what to find, where to
   start, what the repo is, exact output format).

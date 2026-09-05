@@ -1,12 +1,12 @@
 ---
 name: codex-implement
-description: Delegate a well-scoped implementation task to Codex (OpenAI's coding-agent CLI) running fast-tier at high reasoning effort with workspace write access, while you stay the planner, reviewer, and orchestrator. Codex writes the code; you decompose the work into task packets, review every hunk of its diff, run the verification yourself, and send findings back into the same Codex session until it meets the bar. Reach for it when the user asks to have Codex do the coding, when a task is well-specified enough to hand off, or when several independent tasks can be implemented in parallel worktrees.
+description: Delegate a well-scoped implementation task to Codex (OpenAI's coding-agent CLI) with workspace write access, at a reasoning effort matched to the stakes, while you stay the planner, reviewer, and orchestrator. Codex writes the code; you decompose the work into task packets, review every hunk of its diff, run the verification yourself, and send findings back into the same Codex session until it meets the bar. Reach for it when the user asks to have Codex do the coding, when a task is well-specified enough to hand off, or when several independent tasks can be implemented in parallel worktrees.
 ---
 
 # codex-implement — Codex codes, you orchestrate
 
 Hand implementation to Codex (`codex`, OpenAI's coding-agent CLI) with **write access to the
-workspace**, on the **fast** service tier at **high** reasoning effort. You do not stop being the
+workspace**, at a reasoning effort matched to the stakes. You do not stop being the
 engineer: you plan and decompose, write the task packet, review the resulting diff hunk by hunk,
 run the verification yourself, and iterate the same Codex session until the work meets the bar.
 Codex is the implementer; you own correctness and the final quality gate.
@@ -34,7 +34,7 @@ and anything still ambiguous stay with you — resolve the ambiguity, then dispa
 From the repo root (or `-C <repo-root>`):
 ```
 codex exec --sandbox workspace-write \
-  -c service_tier="fast" -c model_reasoning_effort="high" \
+  -c model_reasoning_effort="medium" \
   -o /tmp/codex-<task>-last.md \
   "<task packet>" </dev/null 2>&1 | tee /tmp/codex-<task>.log | tail -40
 ```
@@ -43,9 +43,34 @@ codex exec --sandbox workspace-write \
   dependencies (cargo, uv, npm) will fail unless you pre-warm caches first (`cargo fetch`,
   `uv sync`) — preferred — or, if fetching mid-task is unavoidable, add
   `-c sandbox_workspace_write.network_access=true`.
-- **`service_tier="fast"` + `model_reasoning_effort="high"`** — pin these explicitly rather than
-  relying on `~/.codex/config.toml`. Escalate to `model_reasoning_effort="xhigh"` for a genuinely
-  hard packet; don't pay for it on routine ones.
+- **Pin `service_tier` and `model_reasoning_effort` explicitly** rather than relying on
+  `~/.codex/config.toml`. Never pin a model ID — the config owns that, and hardcoded model names go
+  stale silently.
+- **Effort: `medium` for routine implementation, `high` for correctness-sensitive or debugging work.
+  Treat `xhigh` and `max` as exceptional, not as "more careful".** OpenAI's guidance is agentic
+  coding at medium, complex debugging at high, xhigh "only when your evals show a clear benefit".
+
+  **More effort is not monotonically better, and can be worse.** Excessive test-time reasoning
+  yields diminishing returns and can cause a model to *abandon previously correct answers*. Coding
+  agents specifically show three overthinking failure modes: analysis paralysis (planning at length
+  while making little progress), rogue actions (firing several actions at once), and premature
+  disengagement (stopping on an internal prediction instead of environment feedback). One study
+  varying thinking effort across four levels found no significant effect on avoiding unnecessary
+  edits — 61.5% to 65.8%. In one code-review test, `high` found no more bugs than `low`.
+
+  Cost per task climbs steeply regardless: low $0.63 / medium $1.16 / high $1.41 / xhigh $1.85 /
+  max $2.57, for index 49/52/53/54/55. On SWE-style work, o1 at high effort resolved 29.1% for
+  $1,400 against 21.0% for $400 at low — 3.5x the cost for 8 points.
+
+  **When output quality is the problem, fix the packet, not the effort.** A sharper contract, a
+  named oracle, an explicit verification bar, and a "stop and report rather than deviate" escape
+  hatch all beat turning the dial up — and unlike effort they cannot induce overthinking. Reserve
+  xhigh for work that is genuinely enumerative and wide (auditing every call site, a mutation sweep
+  across many guards), where the risk is *missing* something rather than *reasoning past* it.
+  "This task feels important" is not a reason.
+- **Service tier: `fast` doubles the cost.** Use it only when you are blocked on the result. For a
+  backgrounded packet where you end the turn and wait for the notification, latency is free — the
+  default tier is the better trade.
 - **Redirect stdin `</dev/null`** when passing the prompt as an argv string — otherwise Codex may
   wait on piped stdin for EOF and look hung. The #1 automation gotcha.
 - Implementation runs take **minutes to tens of minutes** — use a generous timeout
@@ -68,7 +93,7 @@ codex exec --sandbox workspace-write \
 ## The task packet — what a good handoff contains
 One prompt string, built from the actual work (never a generic template). Hand Codex a **contract,
 not an edit-list**: the outcome, the invariants, and how it will be judged — then let it inspect the
-repo and find the implementation. Current strong agents (Sol included) do better given goal + tests
+repo and find the implementation. Current frontier coding agents do better given goal + tests
 + freedom to explore than given a prescribed sequence of edits, and over-specifying *guessed* files
 measurably degrades them — pin exact paths only where they are a real constraint (a file that must
 NOT change, a known-good reference to match).
