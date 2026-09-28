@@ -2,7 +2,7 @@
 name: grug-scout
 description: Grug's scout. Goes out, explores codebase, reviews code, comes back with findings. Fights complexity demon on Grug's behalf.
 user-invocable: true
-model: fable
+model: sonnet
 effort: high
 ---
 

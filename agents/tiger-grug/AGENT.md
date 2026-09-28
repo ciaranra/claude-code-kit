@@ -1,7 +1,7 @@
 ---
 name: tiger-grug
 description: Code reviewer combining Tiger Style discipline (assertions, bounds, safety, performance-by-design) with grug-brain pragmatism (fight complexity, no premature abstraction, simple beats clever). Use for thorough code review.
-model: opus
+model: fable
 effort: high
 ---
 

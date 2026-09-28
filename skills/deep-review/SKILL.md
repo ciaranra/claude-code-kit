@@ -41,7 +41,9 @@ The **high-value default is two arms** — they cover the two biggest axes:
   code-reviewer agent type if your setup has one). Prompt it adversarially: "Independently review
   <target>. Attack it — correctness, completeness, every edge case, what's MISSING, security/
   concurrency. Cite file:line, severity + confidence per finding. Don't rubber-stamp." Hand it the files
-  + the claim, nothing of your own read.
+  + the claim, nothing of your own read. Choose its model per call (the Agent tool's `model`
+  parameter): the strongest model you have when being wrong is expensive — a reviewer stronger
+  than the author catches what the author can't see.
 - **Cross-model arm** — run a `codex-review` against the same target with an equivalent adversarial
   prompt (see the `codex-review` skill for invocation + the data-boundary check).
 

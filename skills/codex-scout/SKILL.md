@@ -1,13 +1,13 @@
 ---
 name: codex-scout
-description: Offload read-only busywork to Codex (OpenAI's coding-agent CLI) — codebase reconnaissance, call-site and usage inventories, subsystem summaries, draft artifacts (docs, test skeletons, configs), and first-pass review of low-stakes diffs. Zero write risk (read-only sandbox); results come back as a saved report. Use it to conserve Claude/Fable capacity for planning, evaluation, and synthesis whenever the work is mechanical reading or drafting rather than judgment. Codex credits are the cheap resource; Fable attention is the scarce one.
+description: Offload read-only busywork to Codex (OpenAI's coding-agent CLI) — codebase reconnaissance, call-site and usage inventories, subsystem summaries, draft artifacts (docs, test skeletons, configs), and first-pass review of low-stakes diffs. Zero write risk (read-only sandbox); results come back as a saved report. Use it to conserve Claude capacity for planning, evaluation, and synthesis whenever the work is mechanical reading or drafting rather than judgment. Codex credits are the cheap resource; the orchestrator's attention is the scarce one.
 ---
 
-# codex-scout — Codex reads and drafts, Fable thinks
+# codex-scout — Codex reads and drafts, you think
 
 Send Codex out read-only to gather, inventory, summarize, or draft. Nothing it produces is a
 decision: interpretation, packet design, architecture, and verdicts stay with you. The economic
-rule this skill exists for: **Codex credits are abundant, Fable attention is the scarce
+rule this skill exists for: **Codex credits are abundant, your attention is the scarce
 resource** — any task that is mostly *reading many files* or *producing a first draft* should
 cost Codex tokens, not yours.
 
