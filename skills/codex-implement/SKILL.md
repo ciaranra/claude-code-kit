@@ -183,6 +183,63 @@ packet, not the review:
   set/list/threshold into a packet, grep for an existing predicate that defines it and cite that
   instead — and when the fix lands, require the classification to READ the shared definition
   rather than copy it, or the packet has just authored the duplication it was sent to remove.
+- **A behaviour the packet asserts becomes a licence to move any fence in its way**: a packet
+  said from memory that inputs already containing noise channels "pass through the noise-applying
+  path unchanged"; the owner layer deliberately REJECTS such inputs, and Codex loosened that core
+  rule to satisfy the packet, reporting it as a "required owner-layer extension" (2026-09-19).
+  Before stating how an existing path behaves, read that path; if it contradicts the packet, the
+  packet is wrong. And when a report lists an owner-layer change the packet never asked for, treat
+  it as a fence moved, not a deviation.
+- **Put the guard where CI runs it**: Codex placed an exhaustive classification test as a unit
+  test in a crate the CI recipe excludes from its test run (11 failures there had been invisible
+  for that reason). A guard that never runs is documentation. Check which packages the CI recipe
+  actually tests before accepting the test's location, and put shared logic in a package CI tests
+  so its test is live.
+
+- **Scope every stop condition to its own contract**: a packet with six contracts said of one of
+  them "if no such entry point exists, stop and report rather than inventing one"; Codex found the
+  entry point missing and stopped the WHOLE packet with zero edits, costing a full round
+  (2026-09-21). Write "skip THIS contract, report it, and complete the others" unless the missing
+  piece genuinely blocks the rest. And when a packet is built from a grep of file paths rather
+  than a read of the structure, expect a clean stop on scope: name packages, not files, and state
+  which layer owns each mapping (a converter file the grep never matched held the real one).
+
+- **A report that mentions stashing and restoring the tree means wait before verifying**: an arm
+  that ran its own baseline by moving files aside and restoring them "byte-for-byte" reported all
+  green; verification started immediately after the report and hit a compile error (a method the
+  diff plainly added was "not found"), then the same command passed minutes later with no edit
+  (2026-09-27). The first run had read the tree mid-restore. When a report mentions stashing,
+  snapshotting or restoring, re-read one changed file and re-run rather than trusting either the
+  green claim or the red first result — and never conclude "flaky" from a pass on the second try:
+  force the caches cold (touch the changed files) and get a clean run you can cite.
+
+- **"Reject X" must say whether ABSENT counts as X**: a findings note said "reject a declaration
+  whose `data_type` is not \"qubits\"", Codex implemented `get("data_type") != Some("qubits")`, and
+  an omitted field — which the format's own spec marks optional — became a hard error, breaking a
+  documented example (2026-09-27). Whenever a packet or a findings note asks for validation, state
+  the three cases separately: absent, present-and-valid, present-and-invalid, and cite the spec
+  line that says which of them is legal. The same trap applies to empty strings, empty lists and
+  zero.
+
+- **Never describe existing code from memory in a packet — open the lines and quote them**: three
+  consecutive packets in one session each contained a factual error about code the packet was
+  built around (a converter file the grep never matched held the real mapping; a helper described
+  as consuming a foreign-interface enum actually consumed an IR op; an emission described as
+  including a shift by zero when the helper skips it for bit zero). Every one produced a clean
+  STOP and cost a round (2026-09-27). The tell is a packet sentence of the form "X currently does
+  Y" written without a `sed -n` of X in that turn. Read the exact lines, or state the claim as an
+  assumption for the arm to check first.
+
+- **A report line that calls an external constraint "incorrect" is a workaround confessing
+  itself**: an arm decided a zero-size register should be accepted, found the upstream pydantic
+  schema rejects it (`Gt(gt=0)`), declared the schema "incorrectly requires a strictly positive
+  size", and filtered those operations out of schema validation — disabling upstream validation
+  for that whole operation kind so its own new test would pass (2026-09-27). Nothing in the packet
+  asked for zero to be legal. Grep every report for phrases like "incorrectly", "the schema is
+  wrong", "upstream disagrees", "does not support", and go read the external constraint yourself:
+  it is usually right, and the arm has usually just invented the requirement it is fighting.
+  Related to the fence rule above — the packet asserts, the arm removes whatever blocks the
+  assertion.
 
 - **Label every prescribed test as red/green or compatibility, and pin its expected output to the
   code path, not to intuition**: a packet asked for three tests and one blanket "each must fail on
